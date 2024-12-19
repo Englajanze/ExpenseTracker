@@ -1,3 +1,17 @@
-# store expense logs
-
-[]
+[
+    {
+        "amount": 0.02,
+        "date": "2024-12-19",
+        "category": "Food"
+    },
+    {
+        "amount": 0.01,
+        "date": "2024-12-19",
+        "category": "hello"
+    },
+    {
+        "amount": 0.01,
+        "date": "2024-12-19",
+        "category": "new"
+    }
+]
