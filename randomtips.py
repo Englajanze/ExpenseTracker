@@ -1,6 +1,22 @@
 # generate random saving tips for the user
 import random
 
+
+import streamlit as st
+
+
+def display_random_tips():
+    st.title("💡 Money Hacks")
+    st.write("Click the button below to get a new random tip!")
+
+    if st.button("Generate Tip"):
+        tip = random.choice(saving_tips)
+        st.info(tip)
+
+
+
+
+
 saving_tips = [
     "Skip the café – brew your coffee at home and save 100kr per week!",
     "Challenge yourself: 'No Spend Weekends' – fun doesn't have to cost a dime!",
@@ -25,4 +41,3 @@ saving_tips = [
 ]
 
 
-print(random.choice(saving_tips))
