@@ -5,7 +5,11 @@
 import streamlit as st
 import json
 from datetime import date
+import pandas as pd
 from streamlit_free_text_select import st_free_text_select
+from streamlit_navigation_bar import st_navbar
+
+
 
 EXPENSES_FILE = "data/expenses.json"
 CATEGORY_FILE = "data/expensecatagories.json"
@@ -41,7 +45,8 @@ def display_expenses():
     st.title("💸 Expense Tracker")
     st.write("Welcome to the Expenses page, where you can add your expenses!")
     display_add_expenses_form()
-    display_all_expenses()
+    show_my_expenses()
+
 
 # Form for adding a new expense
 def display_add_expenses_form():
@@ -95,6 +100,50 @@ def display_add_expenses_form():
 
 
 # function to display all the expenses you have so far
+def show_my_expenses():
+    st.title("DISPLAY YOUR EXPENSES")
+    expenses = load_expenses()
+    categories = load_categories()
+
+    choose_selected_showing_expenses = st.selectbox("What would you like to display", ("All Expenses", "Category based", "Date based"))
+
+    if choose_selected_showing_expenses == "All Expenses":
+        if expenses:
+            display_all_expenses = pd.DataFrame(expenses)
+            st.dataframe(display_all_expenses)
+    elif choose_selected_showing_expenses == "Category based":
+        # Category selection for filtering
+        category_selected = st.selectbox("Choose a category", options=["Choose a category"] + categories)
+
+        if category_selected != "Choose a category":
+            # Filter the DataFrame based on the selected category
+            filtered_expenses = [expense for expense in expenses if expense["category"] == category_selected]
+
+            if filtered_expenses:
+                filtered_expenses_df = pd.DataFrame(filtered_expenses)
+                st.dataframe(filtered_expenses_df[['amount', 'date', 'category']])
+            else:
+                st.write(f"No expenses found for the category: {category_selected}")
+        else:
+            st.write("Please choose a category to filter your expenses.")
+    elif choose_selected_showing_expenses == "Date based":
+        date_input = st.date_input("Select a date")
+        date_input_str = date_input.strftime("%Y-%m-%d")
+        if date_input:
+
+        #if date_input != "Select a date":
+            filter_expenses_date = [expense for expense in expenses if expense["date"] == date_input_str]
+
+            if filter_expenses_date:
+                filtered_expenses_date_df = pd.DataFrame(filter_expenses_date)
+                st.dataframe(filtered_expenses_date_df[["amount", "date", "category"]])
+            else:
+                st.write("no expenses found on the specific date")
+        else:
+            st.write("please choose a date to filter")
+
+    else:
+        st.write("no expenses recorded yet")
 
 
 
