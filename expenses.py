@@ -94,7 +94,7 @@ def display_add_expenses_form():
 
 
 
-# function to display all the expenses you have
+# function to display all the expenses you have so far
 
 
 
