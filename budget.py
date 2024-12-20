@@ -3,6 +3,7 @@
 import streamlit as st
 import json
 import expenses
+from streamlit_option_menu import option_menu
 
 
 CATEGORY_FILE = "data/expensecatagories.json"
@@ -16,9 +17,25 @@ def load_categories():
 
 def display_budget():
     st.title("💰 Budget Mastery")
-    st.write("Welcome to the Budget Mastery page!")
-    income_input = total_income_budget()
-    category_budget_divisions(income_input)
+    st.write("Welcome to the Budget Mastery page! Choose what you would like to do today:")
+    selected = option_menu(
+        menu_title=None,
+        options=["Start budgeting","Track your budget", "Vizualize"],
+        icons=["piggy-bank", "search", "bar-chart-line"],
+        menu_icon="cast",
+        default_index=0,
+        orientation="horizontal"
+    )
+    if selected == "Start budgeting":
+        income_input = total_income_budget()
+        category_budget_divisions(income_input)
+    if selected == "Track your budget":
+        st.subheader("Coming soon: here you will be able to track your budgeting")
+    if selected == "Vizualize":
+        st.subheader("Coming soon: here you will be able to visualize your budget/expenses trends")
+
+
+
 
 # this funtion lets the user input their total income
 def total_income_budget():
@@ -38,14 +55,12 @@ def category_budget_divisions(income_input):
         total_sum_budgeting += category_inputs
     remaining_budget = income_input - total_sum_budgeting
     if income_input < total_sum_budgeting:
-        st.error("negative")
+        st.error("nah nah nah, cannot budget for more than you have in income unfurtuanlty, we all wish we could")
     else:
         st.write(f"Your total budgeting by categories is now {total_sum_budgeting}")
         st.write(f"your remaining budget is {remaining_budget}")
 
-def remaining_all_budget_by_expenses():
-    total_remaining = income_input - expenses
-
+# function to show how much of the income is remaning based on the expenses, both in total and in each category
 
 if __name__ == "__main__":
     display_budget()

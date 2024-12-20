@@ -28,5 +28,10 @@
         "amount": 0.10999999999999999,
         "date": "2024-12-17",
         "category": "christmas gift"
+    },
+    {
+        "amount": 50.0,
+        "date": "2024-12-20",
+        "category": "Transport"
     }
 ]
