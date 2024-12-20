@@ -111,6 +111,14 @@ def show_my_expenses():
         if expenses:
             display_all_expenses = pd.DataFrame(expenses)
             st.dataframe(display_all_expenses)
+            if 'amount' in display_all_expenses.columns:
+            # Calculate the total sum of the 'amount' column
+                expense_sum_total = display_all_expenses['amount'].sum()
+
+            # Display the total sum
+                st.write(f"Total expenses: {expense_sum_total}")
+            else:
+                st.warning("The 'amount' column is missing from the expenses data.")
     elif choose_selected_showing_expenses == "Category based":
         # Category selection for filtering
         category_selected = st.selectbox("Choose a category", options=["Choose a category"] + categories)
@@ -122,6 +130,12 @@ def show_my_expenses():
             if filtered_expenses:
                 filtered_expenses_df = pd.DataFrame(filtered_expenses)
                 st.dataframe(filtered_expenses_df[['amount', 'date', 'category']])
+                if 'amount' in filtered_expenses_df.columns:
+                    expense_category_sum = filtered_expenses_df['amount'].sum()
+                    st.write(f"Total expenses in {category_selected} is {expense_category_sum}")
+                else:
+                    st.warning("The amount in {category_selected} is missing from expenses data")
+
             else:
                 st.write(f"No expenses found for the category: {category_selected}")
         else:
@@ -137,6 +151,11 @@ def show_my_expenses():
             if filter_expenses_date:
                 filtered_expenses_date_df = pd.DataFrame(filter_expenses_date)
                 st.dataframe(filtered_expenses_date_df[["amount", "date", "category"]])
+                if 'amount' in filtered_expenses_date_df.columns:
+                    expense_date_sum = filtered_expenses_date_df['amount'].sum()
+                    st.write(f"Total expenses on {date_input_str} is {expense_date_sum}")
+                else:
+                    st.warning(f"The amount in {date_input_str} is missing from expenses data")
             else:
                 st.write("no expenses found on the specific date")
         else:

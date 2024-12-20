@@ -18,5 +18,15 @@
         "amount": 0.08,
         "date": "2024-12-19",
         "category": "Entertainment"
+    },
+    {
+        "amount": 0.10999999999999999,
+        "date": "2024-12-17",
+        "category": "Food"
+    },
+    {
+        "amount": 0.10999999999999999,
+        "date": "2024-12-17",
+        "category": "christmas gift"
     }
 ]
