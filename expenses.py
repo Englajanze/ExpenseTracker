@@ -9,6 +9,7 @@ import pandas as pd
 from streamlit_free_text_select import st_free_text_select
 from streamlit_navigation_bar import st_navbar
 from streamlit_option_menu import option_menu
+import matplotlib.pyplot as plt
 
 
 
@@ -67,7 +68,7 @@ def display_expenses():
     if selected == "Modify":
         display_and_modifying_expenses()
     if selected == "Visualize":
-        st.subheader("Coming soon: Here you will be able to visualize your trends of expenses")
+        expenses_visualizations()
 
 
 
@@ -258,6 +259,30 @@ def display_and_modifying_expenses():
         st.dataframe(expenses)
     else:
         st.write("No expenses to display yet.")
+
+def expenses_visualizations():
+    expenses = load_expenses()
+    categories = load_categories()
+
+    st.subheader("hello, here you will be able to visualize your spending trends, choose how you would like to display your expense trends")
+    # Sample data
+    column_user_input, column_displaying_vizuals = st.columns([1,2], border=True)
+    with column_user_input:
+        st.header("Displaying options")
+        chart_type = st.selectbox("Select Chart type:", ["📈 Line chart", "🍰 Pie chart", "📊 Bar chart"])
+        time_groupings = st.selectbox("Select your groupings:", ["Daily", "Weekly", "Montly", "Yearly"])
+        date_range = st.date_input("Select a date range",value=(pd.to_datetime('2024-01-01'), pd.to_datetime('2024-01-02')), max_value = "today")
+        if len(date_range) == 2:
+            start_date, end_date = date_range
+                # Display the selected date range
+        else:
+            st.write("Please select both start and end dates.")
+
+        categories_displayed = st.selectbox("What expense categories would you like to display?", options=["All"] + categories)
+
+
+    with column_displaying_vizuals:
+        st.header("Your visuals")
 
 
 
