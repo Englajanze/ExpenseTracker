@@ -1,37 +1,27 @@
 [
     {
-        "amount": 0.02,
-        "date": "2024-12-19",
-        "category": "Food"
-    },
-    {
-        "amount": 0.01,
-        "date": "2024-12-19",
-        "category": "hello"
-    },
-    {
-        "amount": 0.01,
-        "date": "2024-12-19",
-        "category": "new"
-    },
-    {
-        "amount": 0.08,
-        "date": "2024-12-19",
-        "category": "Entertainment"
-    },
-    {
-        "amount": 0.10999999999999999,
-        "date": "2024-12-17",
-        "category": "Food"
-    },
-    {
-        "amount": 0.10999999999999999,
-        "date": "2024-12-17",
-        "category": "christmas gift"
-    },
-    {
-        "amount": 50.0,
-        "date": "2024-12-20",
+        "amount": 400.0,
+        "date": "2024-12-26",
         "category": "Transport"
+    },
+    {
+        "amount": 400.0,
+        "date": "2024-12-26",
+        "category": "Transport"
+    },
+    {
+        "amount": 300.0,
+        "date": "2024-12-26",
+        "category": "Hello"
+    },
+    {
+        "amount": 400.0,
+        "date": "2024-12-26",
+        "category": "Transport"
+    },
+    {
+        "amount": 5.0,
+        "date": "2024-12-26",
+        "category": "Other"
     }
 ]

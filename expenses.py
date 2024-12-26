@@ -16,13 +16,20 @@ EXPENSES_FILE = "data/expenses.json"
 CATEGORY_FILE = "data/expensecatagories.json"
 
 # Function to load expenses from the JSON file
+
 def load_expenses():
     try:
         with open(EXPENSES_FILE, "r") as file:
-            return json.load(file)
+            content = file.read().strip()
+            if content:
+                return json.loads(content)
+            else:
+                return []  # Return an empty list if the file is empty
     except FileNotFoundError:
         return []  # Return an empty list if the file doesn't exist
-
+    except json.JSONDecodeError:
+        st.error(f"Error decoding JSON from {EXPENSES_FILE}. Please check the file's content.")
+        return []
 # Function to save expenses back to the JSON file
 def save_expenses(expenses):
     with open(EXPENSES_FILE, "w") as file:
@@ -58,7 +65,7 @@ def display_expenses():
     if selected == "View expenses":
         show_my_expenses()
     if selected == "Modify":
-        st.subheader("Coming soon: here you will be able to modify/delete your expenses")
+        display_and_modifying_expenses()
     if selected == "Visualize":
         st.subheader("Coming soon: Here you will be able to visualize your trends of expenses")
 
@@ -131,7 +138,7 @@ def show_my_expenses():
             st.dataframe(display_all_expenses)
             # shows the total expenses
             if 'amount' in display_all_expenses.columns:
-            # Calculate the total sum of the 'amount' column
+            # Calculate the total sum of the amount column
                 expense_sum_total = display_all_expenses['amount'].sum()
             # Display the total sum
                 st.write(f"Total expenses: {expense_sum_total}")
@@ -188,6 +195,69 @@ def show_my_expenses():
     else:
         st.write("no expenses recorded yet")
 
+# this function will make it possible to edit or delete past expenses, this will update the JSON file
+def display_and_modifying_expenses():
+    st.title("Modify your expenses")
+    expenses = load_expenses()  # Load expenses from the JSON file
+    categories = load_categories()  # Load categories from the categories file
+
+    if expenses:
+        expenses_modifying_df = pd.DataFrame(expenses)
+        expenses_modifying_df['date'] = pd.to_datetime(expenses_modifying_df['date'], errors='coerce')
+
+        # Add a 'Select' column for deletion purposes
+        expenses_modifying_df['Select'] = False
+
+        column_config = {
+            'Select': st.column_config.CheckboxColumn(label='Select for Deletion'),
+            'amount': st.column_config.NumberColumn(label='Amount', min_value=0),
+            'date': st.column_config.DateColumn(label='Date'),
+            'category': st.column_config.SelectboxColumn(label='Category', options=categories)
+        }
+
+        # Display the data editor for modifying expenses
+        edited_df = st.data_editor(
+            expenses_modifying_df,
+            column_config=column_config,
+            num_rows="fixed",  # Prevent adding new rows
+            hide_index=True  # Hide the index column
+        )
+
+        # Handle the "Commit changes" button when the user wants to save changes
+        if st.button("Commit changes"):
+            # Step 1: Handle deletions by removing selected rows from the original expenses list
+            rows_to_delete = edited_df[edited_df['Select']].index
+            if not rows_to_delete.empty:
+                # Remove the selected rows from the original expenses list
+                expenses = [expense for i, expense in enumerate(expenses) if i not in rows_to_delete]
+                st.success(f"Deleted {len(rows_to_delete)} expense(s) successfully!")
+
+            # Step 2: Handle edits by updating only the modified fields (amount and category)
+            # Since rows were deleted, we need to make sure we are working with the updated expenses list
+            for index, row in edited_df.iterrows():
+                # If the row is selected for deletion, skip it
+                if row['Select']:
+                    continue
+
+                # Find the corresponding expense in the original list to modify
+                # Adjust the index due to deletion shifting the rows
+                adjusted_index = index if index < len(expenses) else index - len(rows_to_delete)
+                expense_to_modify = expenses[adjusted_index]
+
+                # Check if there's a change in 'amount' or 'category' and update the corresponding field
+                if row['amount'] != expense_to_modify['amount']:
+                    expense_to_modify['amount'] = row['amount']  # Update the amount
+                if row['category'] != expense_to_modify['category']:
+                    expense_to_modify['category'] = row['category']  # Update the category
+
+            # Step 3: Save the entire updated list (including both modified and unmodified expenses)
+            save_expenses(expenses)  # Save the full list back to the JSON file
+            st.success("Changes saved successfully!")
+
+        # Display the updated DataFrame
+        st.dataframe(expenses)
+    else:
+        st.write("No expenses to display yet.")
 
 
 
