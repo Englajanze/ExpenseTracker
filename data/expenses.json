@@ -23,5 +23,10 @@
         "amount": 5.0,
         "date": "2024-12-26",
         "category": "Other"
+    },
+    {
+        "amount": 30.0,
+        "date": "2024-12-27",
+        "category": "Christmas gift"
     }
 ]
