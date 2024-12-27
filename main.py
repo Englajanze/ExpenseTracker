@@ -30,6 +30,8 @@ page = st.sidebar.radio(
 if page == "📂 Dashboard":
     st.title("📂 Dashboard")
     st.write("Welcome to your dashboard! We are here for you to make sure you follow and track your expenses, we know how hard it can be!")
+    # have some top metrics shown like total spendings, total savings, last added expense, remaning of total budget for the month
+    # lates months spending trends as visuals
 elif page == "💰 Budget Mastery":
     display_budget()
 elif page == "💸 Expense Tracker":
@@ -45,7 +47,17 @@ elif page == "📊 Insights & Charts":
 
 
 
-
+# todolist
+# fix the visuals for the expenses
+# fix a nice dashboard
+# being able to track the budget
+# somehow resetting budget every month, but still keeping past expenses
+# the income money that is left should be sent into savings at the end of every month
+# visualize the budgeting
+# being able to create goals
+# being able to keep track of goals
+# display the savings, in both total and in categories (for example specific for the goals)
+# dashboard should be something fun and interactive, maybe bits and pieces from information across the website
 
 
 
