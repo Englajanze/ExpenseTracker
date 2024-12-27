@@ -40,8 +40,10 @@ def save_categories(categories):
 
 def display_goals():
     st.title("🎯 Achieve Goals")
-    st.write("Welcome to the Goals page, set up and track your goals!")
+    st.subheader("Welcome to the Goals page, set up and track your goals!")
     set_up_goals()
+    st.write("---")  # Divider line
+    display_goal_calculator()  
 
 def set_up_goals():
     categories = load_categories()
@@ -61,5 +63,34 @@ def set_up_goals():
         spend_less_goal_name = st.text_input("Enter the name of your goal here:")
         spend_less_goal_amount = st.number_input("How much would you like to save?")
         spend_less_goal_end_date = st.date_input("Enter when your goal should be reached")
+
+# A goal/budget calculator to help users figure out their goals
+def display_goal_calculator():
+    st.subheader("Need help figuring how much your saving goal?")
+    st.write("Use the calculator below to set your savings goal or get a general budget plan.")
+
+    # Savings goal projection
+    st.write("Savings Goal Calculator")
+    monthly_saving = st.number_input(
+        "How much would you like to save each month?", min_value=0.0, step=1.0
+    )
+    if monthly_saving > 0:
+        st.write("Projected Savings:")
+        for months in [3, 6, 12, 18, 24]:
+            st.write(f"{months} months: {monthly_saving * months}")
+    else:
+        st.write("Enter a monthly savings amount to calculate projections.")
+
+    # Budget planner
+    st.write("Budget Planner")
+    total_budget = st.number_input(
+        "What is your total budget goal?", min_value=0.0, step=1.0
+    )
+    if total_budget > 0:
+        st.write("Monthly Breakdown:")
+        for months in [6, 12, 18, 24]:
+            st.write(f"{months} months: {total_budget / months:.2f} per month")
+    else:
+        st.write("Enter a total budget goal to see the breakdown.")
 
 
