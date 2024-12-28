@@ -11,6 +11,7 @@ from streamlit_navigation_bar import st_navbar
 from streamlit_option_menu import option_menu
 import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime
 
 
 
@@ -261,7 +262,33 @@ def display_and_modifying_expenses():
     else:
         st.write("No expenses to display yet.")
 
+def visualization_filter_by_time_period(expenses, time_period, selected_value=None):
+    expenses_df = pd.DataFrame(expenses)
+    expenses_df['date'] = pd.to_datetime(expenses_df['date'])
 
+    if time_period == "Weekly":
+        week_number = selected_value
+        expenses_df['week'] = expenses_df['date'].dt.isocalendar().week
+        return expenses_df[expenses_df['week'] == week_number]
+    elif time_period == "Monthly":
+        month_number = selected_value
+        expenses_df['month'] = expenses_df['date'].dt.month
+        return expenses_df[expenses_df['month'] == month_number]
+    elif time_period == "Yearly":
+        year_number = selected_value
+        expenses_df['year'] = expenses_df['date'].dt.year
+        return expenses_df[expenses_df['year'] == year_number]
+    elif time_period == "Customized":
+        start_date, end_date = selected_value
+        start_date = pd.to_datetime(start_date)
+        end_date = pd.to_datetime(end_date)
+        if start_date > end_date:
+            st.error("Start date has to be before end date")
+            return pd.DataFrame()
+        return expenses_df[(expenses_df['date'] >= start_date) & (expenses_df['date'] <= end_date) ]
+    elif time_period == "All":
+        return expenses_df
+    return expenses_df
 
 def expenses_visualizations():
     expenses = load_expenses()
@@ -275,43 +302,60 @@ def expenses_visualizations():
         # choose chart type first since they can show different types of things
         chart_type = st.selectbox("Select Chart type:", ["📈 Line chart", "🍰 Pie chart", "📊 Bar chart"])
         if chart_type == "📈 Line chart":
-            line_chart_time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Montly", "Yearly", "Customized"])
-            if line_chart_time_period == "Customized":
+            time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Monthly", "Yearly", "Customized"])
+            if time_period == "Customized":
                 customized_time_period_linechart = st.date_input("Enter your time period here", ("today", "today"), max_value = "today")
             line_chart_categories = st.selectbox("What categories would you like to see?:", options=["Total", "All"] + categories)
 
 
         elif chart_type == "🍰 Pie chart":
-            pie_chart_time_period = st.selectbox("Choose what span you would like to see:", ["All", "Daily", "Weekly", "Montly", "Yearly", "Customized"])
-            if pie_chart_time_period == "Customized":
-                customized_time_period_piechart = st.date_input("Enter your time period here", ("today", "today"), max_value = "today")
-            pie_chart_display = st.radio("Would you like to see in percentage or amount?" ,["% Percentage", ":moneybag: Amount"])
+            time_period = st.selectbox("Choose what span you would like to see:", ["All", "Weekly", "Monthly", "Yearly", "Customized"])
 
+            if time_period == "Weekly":
+                current_week = datetime.now().isocalendar()[1]
+                week_number = st.slider("Select a week", min_value=1, max_value =52, value=current_week)
+                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, week_number)
+            elif time_period == "Monthly":
+                current_month = datetime.now().month
+# need to fix so that the months are displayed instead of numbers for each month
+                month_number = st.slider("Select a month", min_value=1, max_value=12, value=current_month)
+                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, month_number)
+            elif time_period == "Yearly":
+                current_year = datetime.now().year
+                year_number = st.slider("Select a week", min_value=2020, max_value =2027, value=current_year)
+                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, year_number)
+            elif time_period == "Customized":
+
+                start_date = st.date_input("Start date", datetime.now())
+                end_date = st.date_input("End date", datetime.now())
+                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, (start_date, end_date))
+            else:
+                filtered_expenses = visualization_filter_by_time_period(expenses, "All")
+            if filtered_expenses.empty:
+                st.error("No expenses found for the selected time period!")
+                return
+
+            grouped_expenses = filtered_expenses.groupby('category')['amount'].sum()
+            pie_chart_display = st.radio("Display as:" , ["% Percentage", ":moneybag: Amount"])
         elif chart_type == "📊 Bar chart":
-            bar_chart_time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Montly", "Yearly", "Customized"])
-            if bar_chart_time_period == "Customized":
+            time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Montly", "Yearly", "Customized"])
+            if time_period == "Customized":
                 customized_time_period_barchart = st.date_input("Enter your time period here", ("today", "today"), max_value = "today")
 
 
     with column_displaying_vizuals:
         st.header("Your visuals")
         if chart_type == "🍰 Pie chart":
-            df = pd.DataFrame(expenses)
-            category_sums = df.groupby('category')['amount'].sum()
-            labels = category_sums.index
-            sizes = category_sums.values
+            labels = grouped_expenses.index
+            values = grouped_expenses.values
+            fig, ax = plt.subplots()
             if pie_chart_display == "% Percentage":
-                fig, ax = plt.subplots()
-                ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-                ax.axis('equal')  # Equal aspect ratio ensures pie chart is a circle
-                st.pyplot(fig)
+                ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
             elif pie_chart_display == ":moneybag: Amount":
-                fig, ax = plt.subplots()
-                ax.pie(sizes, labels=labels, autopct=lambda p:f' {p*sum(sizes)/100 :.0f} kr', startangle=90)
-                ax.axis('equal')
-                st.pyplot(fig)
+                ax.pie(values, labels=labels, autopct=lambda p: '${:.2f}'.format(p * sum(values) / 100), startangle=90)
 
-
+            ax.axis('equal')  # Equal aspect ratio ensures pie chart is a circle
+            st.pyplot(fig)
 # run a function for adding expenses
 # the function should add amount, catagory and date
 # there should be prefixed catagories, but you can also add new

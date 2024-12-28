@@ -33,5 +33,20 @@
         "amount": 20.0,
         "date": "2024-12-27",
         "category": "School"
+    },
+    {
+        "amount": 10.0,
+        "date": "2023-12-20",
+        "category": "Transport"
+    },
+    {
+        "amount": 90.0,
+        "date": "2024-11-06",
+        "category": "Other"
+    },
+    {
+        "amount": 90.0,
+        "date": "2024-12-02",
+        "category": "Other"
     }
 ]
