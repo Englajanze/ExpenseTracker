@@ -48,5 +48,15 @@
         "amount": 90.0,
         "date": "2024-12-02",
         "category": "Other"
+    },
+    {
+        "amount": 80.0,
+        "date": "2023-11-30",
+        "category": "Transport"
+    },
+    {
+        "amount": 90.0,
+        "date": "2024-12-20",
+        "category": "Food"
     }
 ]

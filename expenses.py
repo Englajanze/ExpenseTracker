@@ -4,14 +4,13 @@
 # ensure that it follows validate inputs
 import streamlit as st
 import json
-from datetime import date
 import pandas as pd
 from streamlit_free_text_select import st_free_text_select
 from streamlit_navigation_bar import st_navbar
 from streamlit_option_menu import option_menu
 import matplotlib.pyplot as plt
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta, date
 
 
 
@@ -290,6 +289,36 @@ def visualization_filter_by_time_period(expenses, time_period, selected_value=No
         return expenses_df
     return expenses_df
 
+def time_period_slider_visualisation(time_period):
+    expenses = load_expenses()
+    if time_period == "Weekly":
+        current_week = datetime.now().isocalendar()[1]
+        week_number = st.slider("Select a week", min_value=1, max_value =52, value=current_week)
+        return week_number
+    elif time_period == "Monthly":
+        current_month = datetime.now().month
+# need to fix so that the months are displayed instead of numbers for each month
+        month_number = st.slider("Select a month", min_value=1, max_value=12, value=current_month)
+        return month_number
+    elif time_period == "Yearly":
+        expense_dates = pd.to_datetime([expense['date'] for expense in expenses])  # Convert dates to datetime
+        expense_dates_series = pd.Series(expense_dates)  # Convert to Series for accessing .dt
+
+        min_year = expense_dates_series.dt.year.min() - 1  # One year before the first expense year
+        max_year = expense_dates_series.dt.year.max() + 1  # One year after the last expense year
+
+        # Display slider with the dynamic range
+        year_number = st.slider("Select a year", min_value=min_year, max_value=max_year, value=datetime.now().year)
+        return year_number
+    elif time_period == "Customized":
+
+        start_date = st.date_input("Start date", datetime.now())
+        end_date = st.date_input("End date", datetime.now())
+        return (start_date, end_date)
+    else:
+        return None
+
+
 def expenses_visualizations():
     expenses = load_expenses()
     categories = load_categories()
@@ -303,39 +332,16 @@ def expenses_visualizations():
         chart_type = st.selectbox("Select Chart type:", ["📈 Line chart", "🍰 Pie chart", "📊 Bar chart"])
         if chart_type == "📈 Line chart":
             time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Monthly", "Yearly", "Customized"])
-            if time_period == "Customized":
-                customized_time_period_linechart = st.date_input("Enter your time period here", ("today", "today"), max_value = "today")
             line_chart_categories = st.selectbox("What categories would you like to see?:", options=["Total", "All"] + categories)
+            selected_value = time_period_slider_visualisation(time_period)
 
 
         elif chart_type == "🍰 Pie chart":
             time_period = st.selectbox("Choose what span you would like to see:", ["All", "Weekly", "Monthly", "Yearly", "Customized"])
+            selected_value = time_period_slider_visualisation(time_period)
 
-            if time_period == "Weekly":
-                current_week = datetime.now().isocalendar()[1]
-                week_number = st.slider("Select a week", min_value=1, max_value =52, value=current_week)
-                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, week_number)
-            elif time_period == "Monthly":
-                current_month = datetime.now().month
-# need to fix so that the months are displayed instead of numbers for each month
-                month_number = st.slider("Select a month", min_value=1, max_value=12, value=current_month)
-                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, month_number)
-            elif time_period == "Yearly":
-                current_year = datetime.now().year
-                year_number = st.slider("Select a week", min_value=2020, max_value =2027, value=current_year)
-                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, year_number)
-            elif time_period == "Customized":
 
-                start_date = st.date_input("Start date", datetime.now())
-                end_date = st.date_input("End date", datetime.now())
-                filtered_expenses = visualization_filter_by_time_period(expenses, time_period, (start_date, end_date))
-            else:
-                filtered_expenses = visualization_filter_by_time_period(expenses, "All")
-            if filtered_expenses.empty:
-                st.error("No expenses found for the selected time period!")
-                return
 
-            grouped_expenses = filtered_expenses.groupby('category')['amount'].sum()
             pie_chart_display = st.radio("Display as:" , ["% Percentage", ":moneybag: Amount"])
         elif chart_type == "📊 Bar chart":
             time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Montly", "Yearly", "Customized"])
@@ -346,6 +352,10 @@ def expenses_visualizations():
     with column_displaying_vizuals:
         st.header("Your visuals")
         if chart_type == "🍰 Pie chart":
+            grouped_expenses = visualization_filter_by_time_period(expenses, time_period, selected_value).groupby('category')['amount'].sum()
+            if grouped_expenses.empty:
+                st.warning("No data available for the selected time period.")
+                return
             labels = grouped_expenses.index
             values = grouped_expenses.values
             fig, ax = plt.subplots()
@@ -353,9 +363,44 @@ def expenses_visualizations():
                 ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
             elif pie_chart_display == ":moneybag: Amount":
                 ax.pie(values, labels=labels, autopct=lambda p: '${:.2f}'.format(p * sum(values) / 100), startangle=90)
-
-            ax.axis('equal')  # Equal aspect ratio ensures pie chart is a circle
+            ax.axis('equal')
             st.pyplot(fig)
+        elif chart_type == "📈 Line chart":
+            filtered_expenses = visualization_filter_by_time_period(expenses, time_period, selected_value)
+            if filtered_expenses.empty:
+                st.warning("No data available for the selected time period and category.")
+                return
+
+            if line_chart_categories == "Total":
+                grouped_expenses = filtered_expenses.groupby('date')['amount'].sum()
+            elif line_chart_categories == "All":
+                grouped_expenses = filtered_expenses.groupby(['date', 'category'])['amount'].sum().unstack(fill_value=0)
+            else:
+                grouped_expenses = filtered_expenses[filtered_expenses['category'] == line_chart_categories].groupby('date')['amount'].sum()
+
+            # Handle time period grouping
+            if time_period == "Weekly":
+                current_year = datetime.now().year
+                start_date = datetime(current_year, 1, 1) + timedelta(weeks=selected_value-1)
+                start_date = start_date - timedelta(days=start_date.weekday())  # Move to the start of the week (Monday)
+                end_date = start_date + timedelta(days=6)  # End of the week
+                all_dates = pd.date_range(start=start_date, end=end_date, freq='D')
+                grouped_expenses = grouped_expenses.reindex(all_dates, fill_value=0)
+
+            elif time_period == "Monthly":
+                current_year = datetime.now().year
+                start_date = datetime.strptime(f'{current_year}-{selected_value:02d}-01', '%Y-%m-%d')
+                end_date = start_date + pd.DateOffset(months=1) - pd.Timedelta(days=1)
+                all_dates = pd.date_range(start=start_date, end=end_date, freq='D')
+                grouped_expenses = grouped_expenses.reindex(all_dates, fill_value=0)
+
+            elif time_period == "Yearly":
+                start_date = pd.to_datetime(f'{selected_value}-01-01')
+                end_date = pd.to_datetime(f'{selected_value}-12-31')
+                all_dates = pd.date_range(start=start_date, end=end_date, freq='D')
+                grouped_expenses = grouped_expenses.reindex(all_dates, fill_value=0)
+
+            st.line_chart(grouped_expenses)
 # run a function for adding expenses
 # the function should add amount, catagory and date
 # there should be prefixed catagories, but you can also add new
