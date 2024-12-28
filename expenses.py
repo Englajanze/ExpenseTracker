@@ -329,7 +329,7 @@ def expenses_visualizations():
     with column_user_input:
         st.header("Displaying options")
         # choose chart type first since they can show different types of things
-        chart_type = st.selectbox("Select Chart type:", ["📈 Line chart", "🍰 Pie chart", "📊 Bar chart"])
+        chart_type = st.selectbox("Select Chart type:", ["📈 Line chart", "🍰 Pie chart"])
         if chart_type == "📈 Line chart":
             time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Monthly", "Yearly", "Customized"])
             line_chart_categories = st.selectbox("What categories would you like to see?:", options=["Total", "All"] + categories)
@@ -343,14 +343,10 @@ def expenses_visualizations():
 
 
             pie_chart_display = st.radio("Display as:" , ["% Percentage", ":moneybag: Amount"])
-        elif chart_type == "📊 Bar chart":
-            time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Montly", "Yearly", "Customized"])
-            if time_period == "Customized":
-                customized_time_period_barchart = st.date_input("Enter your time period here", ("today", "today"), max_value = "today")
-
 
     with column_displaying_vizuals:
         st.header("Your visuals")
+
         if chart_type == "🍰 Pie chart":
             grouped_expenses = visualization_filter_by_time_period(expenses, time_period, selected_value).groupby('category')['amount'].sum()
             if grouped_expenses.empty:
@@ -358,13 +354,24 @@ def expenses_visualizations():
                 return
             labels = grouped_expenses.index
             values = grouped_expenses.values
+            colors = plt.cm.Paired(range(len(values)))
+            explode = [0.05]*len(values)
             fig, ax = plt.subplots()
+            wedges, texts = ax.pie(values, explode= explode, labels=None, startangle=90, colors = colors)
             if pie_chart_display == "% Percentage":
-                ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+                legend_labels = [f"{label}: {percent:.1f}%" for label, percent in zip(labels, 100 * values / sum(values))]
+
             elif pie_chart_display == ":moneybag: Amount":
-                ax.pie(values, labels=labels, autopct=lambda p: '${:.2f}'.format(p * sum(values) / 100), startangle=90)
+                legend_labels = [f"{label}: {amount:.2f}Kr" for label, amount in zip(labels, values)]
+
+            ax.legend(wedges,legend_labels, title="Categories", loc="center left", bbox_to_anchor=(1,0.5))
             ax.axis('equal')
+
+           # legend_labels = [f"{label}: {value:.2f}" for label, value in zip(labels, values)]
+            # ax.legend(wedges,legend_labels, title="Categories", loc="center left", bbox_to_anchor=(1,0.5))
             st.pyplot(fig)
+
+        # if you want line chart
         elif chart_type == "📈 Line chart":
             filtered_expenses = visualization_filter_by_time_period(expenses, time_period, selected_value)
             if filtered_expenses.empty:

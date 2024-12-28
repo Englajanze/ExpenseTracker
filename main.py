@@ -48,7 +48,8 @@ elif page == "📊 Insights & Charts":
 
 
 # todolist
-# fix the visuals for the expenses
+# fix the visuals for the expenses DONE
+# could maybe fix a legend to the pie chart, so the catgeories are at the top of the screen instead of around
 # fix a nice dashboard
 # being able to track the budget
 # somehow resetting budget every month, but still keeping past expenses
