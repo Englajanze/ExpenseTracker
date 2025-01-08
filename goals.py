@@ -93,4 +93,5 @@ def display_goal_calculator():
     else:
         st.write("Enter a total budget goal to see the breakdown.")
 
-
+#Thought this would be a cool addition? 
+#I'll try and replicate the expenses.py navigation bar here so that I can make the savings.py file more interactive as well as implemement the note you had on savings.py as well :)

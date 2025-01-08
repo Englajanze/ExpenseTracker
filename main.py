@@ -11,7 +11,7 @@ from expenses import display_expenses
 from goals import display_goals
 from randomtips import display_random_tips
 from savings import display_savings
-from visualization import display_visualization
+from visualization import display_visualizations
 
 # Sidebar Navigation
 st.sidebar.title("Navigation")
@@ -46,7 +46,7 @@ elif page == "💡 Money Hacks":
 elif page == "🏦 Savings Vault":
     display_savings()
 elif page == "📊 Insights & Charts":
-    display_visualization()
+    display_visualizations()
 
 
 
