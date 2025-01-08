@@ -2,6 +2,9 @@
 # list expenses based on catagory
 # take input of catagory, date and amount
 # ensure that it follows validate inputs
+
+
+#Import all libraries needed for the program
 import streamlit as st
 import json
 import pandas as pd
@@ -13,9 +16,10 @@ import numpy as np
 from datetime import datetime, timedelta, date
 
 
+# importing the releated JSON files
 
-EXPENSES_FILE = "data/expenses.json"
-CATEGORY_FILE = "data/expensecatagories.json"
+EXPENSES_FILE = "data/expenses.json" # saves all expenses with category, amount and date
+CATEGORY_FILE = "data/expensecatagories.json" #saves all categories
 
 # Function to load expenses from the JSON file
 
@@ -26,9 +30,9 @@ def load_expenses():
             if content:
                 return json.loads(content)
             else:
-                return []  # Return an empty list if the file is empty
+                return []  # Returning an empty list if the file is empty
     except FileNotFoundError:
-        return []  # Return an empty list if the file doesn't exist
+        return []  # Returning an empty list if the file doesn't exist
     except json.JSONDecodeError:
         st.error(f"Error decoding JSON from {EXPENSES_FILE}. Please check the file's content.")
         return []
@@ -50,10 +54,12 @@ def save_categories(categories):
     with open(CATEGORY_FILE, "w") as file:
         json.dump(categories, file, indent=4)
 
-# Display the page where the user can add expenses
+# Display the page where the user can add expenses (firt page you see)
 def display_expenses():
     st.title("💸 Expense Tracker")
     st.write("Welcome to the Expenses page, choose what you want to do:")
+
+    # horizontal bar for choosing between view expenses, add expenses, modify or vizualize
     selected = option_menu(
         menu_title=None,
         options=["Add expenses","View expenses", "Modify", "Visualize"],
@@ -62,6 +68,7 @@ def display_expenses():
         default_index=0,
         orientation="horizontal"
     )
+    # loading correct function when navigation is choosen
     if selected == "Add expenses":
         display_add_expenses_form()
     if selected == "View expenses":
@@ -77,6 +84,7 @@ def display_expenses():
 
 # Form for adding a new expense
 def display_add_expenses_form():
+    # loading the JSON files needed
     expenses = load_expenses()
     categories = load_categories()
 
@@ -86,7 +94,7 @@ def display_add_expenses_form():
         amount_expense = st.number_input("Amount:", min_value=0.0, step=0.01, format="%.2f")
         date_expense = st.date_input("Date", value=date.today())
 
-        # Category selection with the editable dropdown using st_free_text_select
+        # Category selection with the already existing categories and option to add new category (that will be saved in JSON file)
         category = st_free_text_select(
             label="Category",
             options=categories,
@@ -132,8 +140,10 @@ def show_my_expenses():
     expenses = load_expenses()
     categories = load_categories()
 
+    #option to choose what type of expenses you want to show
     choose_selected_showing_expenses = st.selectbox("What would you like to display", ("All Expenses", "Category based", "Date based"))
 
+    #if statements to select what should happen depending on what type of expenses you want to see
     if choose_selected_showing_expenses == "All Expenses":
         if expenses:
             display_all_expenses = pd.DataFrame(expenses)
@@ -149,7 +159,7 @@ def show_my_expenses():
                 st.warning("The 'amount' column is missing from the expenses data.")
 
     elif choose_selected_showing_expenses == "Category based":
-        # Category selection for filtering
+        # choose what category you would like to display expenses from
         category_selected = st.selectbox("Choose a category", options=["Choose a category"] + categories)
 
         if category_selected != "Choose a category":
@@ -171,6 +181,8 @@ def show_my_expenses():
                 st.write(f"No expenses found for the category: {category_selected}")
         else:
             st.write("Please choose a category to filter your expenses.")
+
+    #letting the user select to display expenses based on date
     elif choose_selected_showing_expenses == "Date based":
         date_input = st.date_input("Select a date")
         date_input_str = date_input.strftime("%Y-%m-%d")
@@ -261,10 +273,12 @@ def display_and_modifying_expenses():
     else:
         st.write("No expenses to display yet.")
 
+# function that will be displayed if "vizualisation" is choosen in the horizontal navigation bar
 def visualization_filter_by_time_period(expenses, time_period, selected_value=None):
     expenses_df = pd.DataFrame(expenses)
     expenses_df['date'] = pd.to_datetime(expenses_df['date'])
 
+    # how expenses should be vizualized depending on user selected dates/timeframe
     if time_period == "Weekly":
         week_number = selected_value
         expenses_df['week'] = expenses_df['date'].dt.isocalendar().week
@@ -277,6 +291,8 @@ def visualization_filter_by_time_period(expenses, time_period, selected_value=No
         year_number = selected_value
         expenses_df['year'] = expenses_df['date'].dt.year
         return expenses_df[expenses_df['year'] == year_number]
+
+    #lets user choose their own period of dates
     elif time_period == "Customized":
         start_date, end_date = selected_value
         start_date = pd.to_datetime(start_date)
@@ -289,6 +305,7 @@ def visualization_filter_by_time_period(expenses, time_period, selected_value=No
         return expenses_df
     return expenses_df
 
+# slider that lets the user choose between different days/weeks/months/year
 def time_period_slider_visualisation(time_period):
     expenses = load_expenses()
     if time_period == "Weekly":
@@ -297,7 +314,7 @@ def time_period_slider_visualisation(time_period):
         return week_number
     elif time_period == "Monthly":
         current_month = datetime.now().month
-# need to fix so that the months are displayed instead of numbers for each month
+        # need to fix so that the months are displayed instead of numbers for each month
         month_number = st.slider("Select a month", min_value=1, max_value=12, value=current_month)
         return month_number
     elif time_period == "Yearly":
@@ -318,8 +335,9 @@ def time_period_slider_visualisation(time_period):
     else:
         return None
 
-
+# function that lets user choose how to display their expenses and the actual matplotlib charts
 def expenses_visualizations():
+    #loading the JSON files needed
     expenses = load_expenses()
     categories = load_categories()
 
@@ -330,12 +348,14 @@ def expenses_visualizations():
         st.header("Displaying options")
         # choose chart type first since they can show different types of things
         chart_type = st.selectbox("Select Chart type:", ["📈 Line chart", "🍰 Pie chart"])
+
+        # if line chart the options is span and catgories
         if chart_type == "📈 Line chart":
             time_period = st.selectbox("Choose what span you would like to see:", ["Weekly", "Monthly", "Yearly", "Customized"])
             line_chart_categories = st.selectbox("What categories would you like to see?:", options=["Total", "All"] + categories)
             selected_value = time_period_slider_visualisation(time_period)
 
-
+        # if pie chart they can choose span and if they should see percent or amount of each pie slice
         elif chart_type == "🍰 Pie chart":
             time_period = st.selectbox("Choose what span you would like to see:", ["All", "Weekly", "Monthly", "Yearly", "Customized"])
             selected_value = time_period_slider_visualisation(time_period)
@@ -366,9 +386,7 @@ def expenses_visualizations():
 
             ax.legend(wedges,legend_labels, title="Categories", loc="center left", bbox_to_anchor=(1,0.5))
             ax.axis('equal')
-
-           # legend_labels = [f"{label}: {value:.2f}" for label, value in zip(labels, values)]
-            # ax.legend(wedges,legend_labels, title="Categories", loc="center left", bbox_to_anchor=(1,0.5))
+            
             st.pyplot(fig)
 
         # if you want line chart

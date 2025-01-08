@@ -2,6 +2,9 @@
 # should contain a meny where user can choose to display
 # add expenses, view expenses, view budget, view spending trends, view savings, set or view goals
 
+
+
+#importing libraries needed
 import streamlit as st
 from budget import display_budget
 from expenses import display_expenses
@@ -15,7 +18,7 @@ st.sidebar.title("Navigation")
 page = st.sidebar.radio(
     "Choose a page",
     [
-        "📂 Dashboard",  # Default page
+        "📂 Dashboard",  # The first (home) page of the program
         "💰 Budget Mastery",
         "💸 Expense Tracker",
         "🎯 Achieve Goals",
@@ -23,10 +26,10 @@ page = st.sidebar.radio(
         "🏦 Savings Vault",
         "📊 Insights & Charts",
     ],
-    index=0  # Set the default to the first option
+    index=0  # Set the default so when entering the program you arrive at dashboard
 )
 
-# Load the corresponding page based on selection
+# Loading the correct file when side bar navigation is choicen
 if page == "📂 Dashboard":
     st.title("📂 Dashboard")
     st.write("Welcome to your dashboard! We are here for you to make sure you follow and track your expenses, we know how hard it can be!")

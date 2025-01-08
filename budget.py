@@ -5,7 +5,7 @@ import json
 import expenses
 from streamlit_option_menu import option_menu
 
-
+# importing needed JSON file
 CATEGORY_FILE = "data/expensecatagories.json"
 
 def load_categories():
