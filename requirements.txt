@@ -2,5 +2,5 @@ pandas
 matplotlib
 streamlit
 streamlit_option_menu
-random
+
 
